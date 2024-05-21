@@ -1,0 +1,313 @@
+---
+output:
+  html_document:
+    df_print: paged
+    code_download: TRUE
+    toc: true
+    toc_depth: 1
+editor_options:
+  chunk_output_type: console
+---
+
+# Writing Reusable R code
+
+```{r}
+# place to install packages and load source code
+
+
+```
+
+## Introduction
+
+### What is Reusable code?
+
+1.  You are your most important collaborator
+
+2.  Reproducible research methods rely on good coding and great documentation
+
+**Reproducibility:** "Ability to recompute data analytic results given an observed data set and knowledge of the data analysis pipeline"
+
+**Replicability:** "The chance that an independent experiment targeting the same scientific question will produce a consistent result."
+
+[*Fun read*]{.underline}: [Reproducibility trial: 246 biologists get different results from same data sets](https://www.nature.com/articles/d41586-023-03177-1) (Nature 2023)
+
+### **Questions to think about**
+
+-   What about your current data analysis pipelines makes you feel uncomfortable?
+
+-   If you left your project for six months, how difficult would it be to restart?
+
+-   How easily is your PI or your collaborator able to interact with your analysis?
+
+    If I asked you to share a screenshot of your current project folder structure, how much do you think others will understand at a quick glance?
+
+### After today's session
+
+Here are some things I would like you to keep in mind for today:
+
+-   Conclude that reproducible research is a continual process with no end
+
+-   Don't feel like you need to make everything 100% reproducible in your first go
+
+-   Evaluate initial steps you can take to make your research more reproducible
+
+-   With each project, attempt to add one small element to make your work more reproducible
+
+### Structure for today
+
+1.  Document
+
+2.  Organize your files
+
+3.  Script everything
+
+4.  DRY - Don't repeat yourself
+
+5.  Automate what you can
+
+6.  Environment and version control
+
+[Noble 2009 *PLoS Comp Biol*](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424)is a good reference to read for some of these topics.
+
+## 1. Document everything!
+
+### Basic documentation
+
+-   `README.md` in root of project directory provides a navigation to anyone coming to your project
+
+-   GitHub automatically shows the `README.md` file when you open the repository's webpage
+
+-   Useful to provide directory structure so newbie knows where everything is (or should be)
+
+-   Specify software dependencies, versions, and where they should be installed
+
+    -   Add `sessionInfo()` output to the end of your README file
+
+-   Give instructions on how someone would enter project or what they should do
+
+### Some do's and don'ts
+
+-   **Plain text documentation** such as Markdown is best, it can be read easily and changes can be tracked easily with version control such as Git. Moreover, we can use code to generate the text in the documentation!
+
+-   **Self-documenting directory and file names**
+
+    -   NO spaces in directory and file names. Keep file naming conventions consistent for clarity.
+
+        -   `raw_data`, `build_figure_1.R`
+
+        -   `RawData`, `BuidFigure1.R`
+
+        -   not: `raw data`, `build figure 1.R`
+
+    -   Be descriptive, atomic, and logical
+
+        -   `data/raw`, `data/processed`
+
+        -   not: `stuff`, `data_raw`, `data_processed`
+
+-   **Self-documenting code**
+
+    -   Pick meaningful variable/function names in your scripts
+
+    -   Choose a casing strategy and be consistent in using it:
+
+        -   `snake_case_is_popular` (easier to read)
+
+        -   `camelCaseIsPopular` / `CamelCaseIsPopular`
+
+    -   Avoid `.`'s, `-`'s and other symbols
+
+    -   Variable grammar:
+
+        -   nouns: variables (`sequence`)
+
+        -   verbs: functions (`cluster_sequences`)
+
+        -   logicals: questions (`is_sequence`)
+
+-   **Do it with style**
+
+    -   Follow a consistent style guide (eg: Hadley [R](http://adv-r.had.co.nz/Style.html), Google [R](https://google.github.io/styleguide/Rguide.xml) guides)
+
+    -   Be consistent within your project and across projects
+
+    -   Think about directory, file, variable, function names
+
+    -   Think about how people should be programming
+
+-   **Comment your code**
+
+    -   The top of a script file should explain what the script does and describe the expected inputs and outputs
+
+    -   More complex functions should list the inputs and outputs
+
+    -   Use comments to describe what a line of code should be doing and why
+
+## Exercise 1
+
+What do you think of the names below, and how would you fix them if there is a problem?
+
+```{r}
+length
+gc_content
+build_scatterplot()
+foobar
+age.in.days
+x
+My Papers/
+is_rna_sequence()
+1st_apple
+generate-figure-1.R
+```
+
+### Bad Practices to Avoid!
+
+-   Do not rely on `.Rprofile` files
+
+-   Do not save R session on exiting
+
+-   Do not use `attach` or `setwd` in R
+
+    -   use relative file paths
+
+    -   use RProjects
+
+-   Run everything from the root of your project directory - no `cd`'s
+
+-   Do not edit intermediate files by hand
+
+## 2. Organize your files
+
+-   Use a project template
+
+-   I like to have separate folders for `data` `code` `figures` and name numerically in the order of operations, eg `data/1-raw` `data/2-processed` `data/3-synthetic` and so on.
+
+-   Use version control instead of `script_v1.R` , `script_final.R` or `script_FINAL_final.R`
+
+-   Keep raw data raw! (more on this later)
+
+-   Use self-documenting file and folder names (see above)
+
+## Exercise 2
+
+What changes would you make in the file organization for the following projects:
+
+[Meadow et al. *Microbiome* study](https://github.com/jfmeadow/Meadow_etal_Surfaces/)
+
+[Westcott & Schloss *mSphere* study](https://github.com/SchlossLab/Westcott_OptiClust_mSphere_2017/)
+
+## 3. Script everything and rebuild from source
+
+-   Do not use interactive or GUI interfaces - script everything!
+
+-   Remember that raw data should stay raw. There are several packages to import your raw data in its original format
+
+    -   [`readr` package](http://readr.tidyverse.org) for importing data from a variety of text formats
+
+    -   [`readxl` package](http://readxl.tidyverse.org) for reading and writing Excel files
+
+    -   [`haven` package](https://github.com/tidyverse/haven) for reading in SAS, SPSS, and Stata data files
+
+    -   [`googlesheets` packge](https://github.com/jennybc/googlesheets) for accessing and managing Google spreadsheets
+
+    -   Variety of tools and APIs for accessing web content (e.g. [`httr`](https://github.com/hadley/httr), [`rvest`](https://github.com/hadley/rvest), [`rentrez`](https://github.com/ropensci/rentrez))
+
+-   Establish a data-processing pipeline
+
+-   Don't modify raw data files!!
+
+-   Encode meta-data as data, not as code.
+
+    -   Move all the extra data into their own *.csv* files and treat them as data. Then use functions to modify the raw data, using the [new files as input](https://nicercode.github.io/blog/2013-07-09-modifying-data-with-lookup-tables/).
+
+-   Establish a formal process for processing and reviewing each data set
+
+    -   At each stage automate as much as possible to reduce your cognitive workload and errors.
+
+```{=html}
+<!-- -->
+```
+-   Defensive programming and testing (resource [chapter](http://adv-r.had.co.nz/Exceptions-Debugging.html) from Advanced R book)
+
+    -   users do weird things, build tests to anticipate this
+
+    -   use `if() .. else if() .. else()`
+
+    -   `length` and `is.xxx` functions
+
+    -   `all` and `any`
+
+    -   `stopifnot` - script stops if something is not true
+
+    -   `{testthat}` package for automating code tests
+
+    -   `{validate}` package allows you to `check_that` variables meet certain criteria
+
+    -   handle conditions with `tryCatch()`
+
+## 4. Don't Repeat Yourself (DRY)
+
+-   If you have lines of code that you use multiple times within a script, or across scripts, you have the following options:
+
+    -   create a loop
+
+    -   use an apply family function
+
+    -   create a function
+
+    -   create a variable
+
+    -   create a source document or folder which you can load into your script at the beginning with packages
+
+        ```{r}
+        # option 1 - loading a single file
+        source("path/to/src/file")
+
+        # option 2 - when you want to load every file in the src directory
+        list.files("./src/R_source/", full.names = TRUE) %>% map(source)
+        ```
+
+This is very useful for example to define color schemes and symbol schemes across scripts to generate consistent figures. It also ensures that you only need to fix bugs once. Ideally, you would put the source files inside the `code` folder, and maybe even a `code/src` subfolder.
+
+If you want to share your functions with labmates or the broader research community you could:
+
+-   Write a package - <https://r-pkgs.org/> - Book on package development
+
+-   Use box - <https://klmr.me/box/> - newer alternative to packages for code sharing (in development)
+
+## Exercise 3
+
+Load `utilities.R` into this document, and use one of the functions to see if it works
+
+```{r}
+# your code here
+
+```
+
+## 5. Automate
+
+Automation comes in very handy as your analysis grows. We won't cover this today, but think about creating pipelines with [snakemake](https://snakemake.readthedocs.io/en/stable/#:~:text=The%20Snakemake%20workflow%20management%20system,to%20modify%20the%20workflow%20definition.), [nextflow](https://www.nextflow.io/) and other such tools. If your analysis is fully scripted, then you should be able to take in the raw data and execute all the commands necessary to create the figures and results in one go. [Github actions](https://docs.github.com/en/actions) is another way to automate certain actions in your project workflow.
+
+## 6. Environment and version control
+
+As soon as you start a new project, set up an RProject, and enable version control. Ideally you also want to enable package management such as with `{packrat}` or `{venv}`. See previous NSIR workshop on [package management in R](https://github.com/nuitrcs/NSIR-package-management) to learn how to do this.
+
+Another good practice is to add the `sessionInfo()` output to the end of your README file. This ensures that users can see what versions of packages you used to generate your results.
+
+Save yourself from dependency hell - use version control!
+
+Github facilitates seamless collaboration by:
+
+-   syncing changes to scripts and data among collaborators.
+
+-   allowing us to track the [many issues](https://github.com/dfalster/baad/issues?q=is%3Aissue+is%3Aclosed) identified while reviewing data sets.
+
+-   providing a nice interface for seeing who changed what and when.
+
+-   allowing others to make changes to their data.
+
+-   releasing compiled versions of the data
+
+## Exercise 4
+
+Identify one baby-step that you could start with to implement better coding practices in your project today! Share your baby-step with everyone in the chat.
